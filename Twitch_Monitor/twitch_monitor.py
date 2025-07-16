@@ -4,7 +4,7 @@ import asyncio
 import logging
 import aiohttp
 from models import db, TwitchUser
-from app import app
+from server import app
 from dotenv import load_dotenv
 
 load_dotenv()
