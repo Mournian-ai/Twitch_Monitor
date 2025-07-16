@@ -9,7 +9,7 @@ load_dotenv()
 
 # Flask app setup
 app = Flask(__name__)
-app.secret_key = 'password_goes_here'  # Replace with a strong secret key
+app.secret_key = os.getenv('FLASK_SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'  # Update if needed
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -17,7 +17,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 # Admin password for protected actions
-ADMIN_PASSWORD = "password_for_website_changes"  # Replace with a secure password
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
 
 # Twitch API credentials (replace with your actual values)
 TWITCH_CLIENT_ID = os.getenv('TWITCH_CLIENT_ID')
