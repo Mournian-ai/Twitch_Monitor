@@ -9,7 +9,7 @@ load_dotenv()
 
 # Flask app setup
 app = Flask(__name__)
-app.secret_key = 'cherrypie'  # Replace with a strong secret key
+app.secret_key = 'password_goes_here'  # Replace with a strong secret key
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'  # Update if needed
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
