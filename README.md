@@ -39,7 +39,7 @@ Copy the example environment file and fill in your credentials:
 cp Twitch_Monitor/env.example .env
 ```
 
-Edit `.env` and set the variables such as `TWITCH_CLIENT_ID`, `TWITCH_ACCESS_TOKEN`, `DISCORD_WEBHOOK_URL` and other Twitch settings (`TWITCH_BOT_TOKEN`, `TWITCH_CHANNEL`, `TWITCH_NICK`, `TWITCH_PREFIX`, `TWITCH_CLIENT_SECRET`, `TWITCH_REFRESH_TOKEN`).
+Edit `.env` and set the variables such as `FLASK_SECRET_KEY` and `ADMIN_PASSWORD` for the web interface along with `TWITCH_CLIENT_ID`, `TWITCH_ACCESS_TOKEN`, `DISCORD_WEBHOOK_URL` and other Twitch settings (`TWITCH_BOT_TOKEN`, `TWITCH_CHANNEL`, `TWITCH_NICK`, `TWITCH_PREFIX`, `TWITCH_CLIENT_SECRET`, `TWITCH_REFRESH_TOKEN`).
 
 ## Usage
 
