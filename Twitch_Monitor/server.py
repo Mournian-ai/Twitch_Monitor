@@ -17,7 +17,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 # Admin password for protected actions
-ADMIN_PASSWORD = "cherrypie"  # Replace with a secure password
+ADMIN_PASSWORD = "password_for_website_changes"  # Replace with a secure password
 
 # Twitch API credentials (replace with your actual values)
 TWITCH_CLIENT_ID = os.getenv('TWITCH_CLIENT_ID')
