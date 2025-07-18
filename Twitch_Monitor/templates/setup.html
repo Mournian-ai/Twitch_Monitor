@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environment Setup</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: center;
+        }
+        form {
+            display: inline-block;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input {
+            width: 300px;
+        }
+        .links {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Environment Setup</h1>
+    <div class="links">
+        <p>
+            Generate Twitch application credentials at
+            <a href="https://dev.twitch.tv/console/apps" target="_blank">Twitch Developer Dashboard</a>.<br>
+            Learn about access tokens at
+            <a href="https://dev.twitch.tv/docs/authentication/getting-tokens-oauth" target="_blank">Twitch OAuth</a>.<br>
+            Discord webhooks can be created from the
+            <a href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks" target="_blank">Discord documentation</a>.
+        </p>
+    </div>
+    <form method="post">
+        {% for key in keys %}
+        <label>{{ key }}<br>
+            <input type="text" name="{{ key }}" value="{{ env[key] }}">
+        </label>
+        {% endfor %}
+        <button type="submit">Save</button>
+    </form>
+    <div style="margin-top:20px;">
+        <a href="{{ url_for('index') }}" style="color:white;">Back</a>
+    </div>
+</body>
+</html>

@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from models import db, TwitchUser  # Import your database and model
-from dotenv import load_dotenv
+from dotenv import load_dotenv, dotenv_values, set_key
 import aiohttp
 import asyncio
 import os
@@ -73,6 +73,31 @@ def index():
     """Render the main page."""
     users = TwitchUser.query.order_by(TwitchUser.is_live.desc()).all()  # Live users first
     return render_template('index.html', users=users)
+
+
+@app.route('/setup', methods=['GET', 'POST'])
+def setup():
+    """Display and update environment configuration."""
+    dotenv_path = os.path.join(os.getcwd(), '.env')
+    keys = [
+        'TWITCH_BOT_TOKEN', 'TWITCH_CHANNEL', 'TWITCH_NICK', 'TWITCH_PREFIX',
+        'TWITCH_CLIENT_ID', 'TWITCH_CLIENT_SECRET', 'TWITCH_ACCESS_TOKEN',
+        'TWITCH_REFRESH_TOKEN', 'DISCORD_WEBHOOK_URL', 'FLASK_SECRET_KEY',
+        'ADMIN_PASSWORD'
+    ]
+    env_values = {key: os.getenv(key, '') for key in keys}
+
+    if request.method == 'POST':
+        for key in keys:
+            value = request.form.get(key, '')
+            set_key(dotenv_path, key, value)
+            os.environ[key] = value
+
+        load_dotenv(dotenv_path, override=True)
+        flash('Environment variables saved.')
+        return redirect(url_for('setup'))
+
+    return render_template('setup.html', env=env_values, keys=keys)
 
 
 @app.route('/add', methods=['POST'])
