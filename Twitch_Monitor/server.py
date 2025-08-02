@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from models import db, TwitchUser  # Import your database and model
 from dotenv import load_dotenv, dotenv_values, set_key
 import aiohttp
@@ -32,121 +32,27 @@ async def fetch_profile_image(username):
                 f"https://api.twitch.tv/helix/users?login={username}",
                 headers={
                     'Client-ID': TWITCH_CLIENT_ID,
-                    'Authorization': f'Bearer {TWITCH_ACCESS_TOKEN}',
-                },
+                    'Authorization': f'Bearer {TWITCH_ACCESS_TOKEN}'
+                }
             )
-            user_data = await response.json()
-            if 'data' in user_data and user_data['data']:
-                return user_data['data'][0]['profile_image_url']
-            else:
-                return None
+            data = await response.json()
+            return data['data'][0]['profile_image_url'] if data['data'] else ""
         except Exception as e:
             print(f"Error fetching profile image for {username}: {e}")
-            return None
+            return ""
 
 
-async def fetch_game_name_and_image(game_id):
-    """Fetch the game name and box art using the Twitch API."""
-    async with aiohttp.ClientSession() as session:
-        try:
-            response = await session.get(
-                f"https://api.twitch.tv/helix/games?id={game_id}",
-                headers={
-                    'Client-ID': TWITCH_CLIENT_ID,
-                    'Authorization': f'Bearer {TWITCH_ACCESS_TOKEN}',
-                },
-            )
-            game_data = await response.json()
-            if 'data' in game_data and game_data['data']:
-                game_name = game_data['data'][0]['name']
-                game_image = game_data['data'][0]['box_art_url'].replace("{width}x{height}", "40x40")
-                return game_name, game_image
-            else:
-                return None, None
-        except Exception as e:
-            print(f"Error fetching game info for game_id {game_id}: {e}")
-            return None, None
-
-
-@app.route('/')
-def index():
-    """Render the main page."""
-    users = TwitchUser.query.order_by(TwitchUser.is_live.desc()).all()  # Live users first
-    return render_template('index.html', users=users)
-
-
-@app.route('/setup', methods=['GET', 'POST'])
-def setup():
-    """Display and update environment configuration."""
-    dotenv_path = os.path.join(os.getcwd(), '.env')
-    keys = [
-        'TWITCH_BOT_TOKEN', 'TWITCH_CHANNEL', 'TWITCH_NICK', 'TWITCH_PREFIX',
-        'TWITCH_CLIENT_ID', 'TWITCH_CLIENT_SECRET', 'TWITCH_ACCESS_TOKEN',
-        'TWITCH_REFRESH_TOKEN', 'DISCORD_WEBHOOK_URL', 'FLASK_SECRET_KEY',
-        'ADMIN_PASSWORD'
-    ]
-    env_values = {key: os.getenv(key, '') for key in keys}
-
-    if request.method == 'POST':
-        for key in keys:
-            value = request.form.get(key, '')
-            set_key(dotenv_path, key, value)
-            os.environ[key] = value
-
-        load_dotenv(dotenv_path, override=True)
-        flash('Environment variables saved.')
-        return redirect(url_for('setup'))
-
-    return render_template('setup.html', env=env_values, keys=keys)
-
-
-@app.route('/add', methods=['POST'])
-def add_streamer():
-    """Add a new streamer to the database."""
-    password = request.form.get('password')
-    if password != ADMIN_PASSWORD:
-        flash("Incorrect password. Access denied.")
-        return redirect(url_for('index'))
-
-    username = request.form['username'].strip()
-
-    # Check if the user already exists
-    existing_user = TwitchUser.query.filter_by(username=username).first()
-    if existing_user:
-        flash(f"Streamer {username} already exists.")
-        return redirect(url_for('index'))
-
-    # Fetch the profile image asynchronously
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    profile_image_url = loop.run_until_complete(fetch_profile_image(username))
-
-    new_user = TwitchUser(username=username, profile_image_url=profile_image_url)
-    db.session.add(new_user)
-    db.session.commit()
-    flash(f"Streamer {username} added successfully!")
-    return redirect(url_for('index'))
-
-
-@app.route('/remove/<int:user_id>', methods=['POST'])
-def remove_streamer(user_id):
-    """Remove a streamer from the database."""
-    password = request.form.get('password')
-    if password != ADMIN_PASSWORD:
-        flash("Incorrect password. Access denied.")
-        return redirect(url_for('index'))
-
-    user = TwitchUser.query.get(user_id)
-    if user:
-        db.session.delete(user)
-        db.session.commit()
-        flash(f"Streamer {user.username} removed successfully!")
-    else:
-        flash("Streamer not found.")
-    return redirect(url_for('index'))
-
-
-if __name__ == '__main__':
-	with app.app_context():
-		db.create_all()
-	app.run(debug=True, host='0.0.0.0', port=5000)
+@app.route('/api/streamers')
+def get_streamers():
+    """API endpoint to return all monitored streamers and their status."""
+    users = TwitchUser.query.all()
+    return jsonify([
+        {
+            'username': u.username,
+            'is_live': u.is_live,
+            'stream_title': u.stream_title,
+            'game_name': u.game_name,
+            'game_image_url': u.game_image_url,
+            'profile_image_url': u.profile_image_url
+        } for u in users
+    ])
